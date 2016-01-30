@@ -6,7 +6,9 @@
 
 (defn create-server []
   (alter-var-root #'service-instance
-                  (constantly (bootstrap/create-server service/service))))
+                  (constantly (bootstrap/create-server
+                               (-> service/service
+                                   (bootstrap/default-interceptors))))))
 
 (defn start []
   (when service-instance

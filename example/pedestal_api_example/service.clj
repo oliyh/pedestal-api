@@ -1,20 +1,35 @@
 (ns pedestal-api-example.service
   (:require [pedestal-api
              [swagger :refer [doc swagger-ui swagger-json]]
-             [request-coercion :refer [body-params common-body]]
+             [request-params :refer [body-params common-body]]
              [content-negotiation :refer [negotiate-response]]
-             [error-handling :refer [error-responses]]]
+             [error-handling :refer [error-responses]]
+             [routes :refer [defroutes]]]
             [io.pedestal.http :as bootstrap]
-            [io.pedestal.http.route.definition :as definition]
             [io.pedestal.interceptor :as i]
             [route-swagger
              [interceptor :as sw.int]
              [doc :as sw.doc]]
             [schema.core :as s]))
 
-(defmacro defroutes [n doc routes]
-  #_`(def ~n (s/with-fn-validation (-> ~routes definition/expand-routes (sw.doc/with-swagger ~doc))))
-  `(def ~n (-> ~routes definition/expand-routes (sw.doc/with-swagger ~doc))))
+(s/defschema Pet
+  {:name s/Str
+   :type s/Str
+   :age s/Int})
+
+(def create-pet
+  (sw.doc/annotate
+   {:summary   "Create a pet"
+    :parameters {:body-params Pet}
+    :responses {201 {:body {:id s/Int
+                            :pet Pet}}}}
+   (i/interceptor
+    {:name  ::create-pet
+     :enter (fn [ctx]
+              (assoc ctx :response
+                     {:status 201
+                      :body {:id 1
+                             :pet (get-in ctx [:request :body-params])}}))})))
 
 (def get-all-pets
   (sw.doc/annotate
@@ -37,19 +52,18 @@
                           :url         "http://swagger.io"}}
           {:name        "orders"
            :description "Operations about orders"}]}
-  [[["/" ^:interceptors [(negotiate-response)
-                         error-responses
+  [[["/" ^:interceptors [error-responses
+                         (negotiate-response)
                          (body-params)
                          common-body
                          (sw.int/coerce-request)
-                         (sw.int/validate-response)
-                         ]
+                         (sw.int/validate-response)]
      ["/pets" ^:interceptors [(doc {:tags ["pets"]})]
-      {:get get-all-pets}]
+      {:get get-all-pets
+       :post create-pet}]
 
      ["/swagger.json" {:get swagger-json}]
      ["/*resource" {:get swagger-ui}]]]])
-
 
 (def service
   {:env                      :dev

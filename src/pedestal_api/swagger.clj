@@ -5,9 +5,7 @@
 
 (def swagger-json (i/interceptor (sw.int/swagger-json)))
 
-(def swagger-ui (i/interceptor {:name  :foo
-                                :enter (fn [context]
-                                         ((:enter (sw.int/swagger-ui)) context))}))
+(def swagger-ui (i/interceptor (sw.int/swagger-ui)))
 
 (defn doc
   "Adds metatata m to a swagger route"
