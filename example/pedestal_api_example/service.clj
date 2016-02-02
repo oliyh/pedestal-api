@@ -59,8 +59,8 @@
       {:get get-all-pets
        :post create-pet}]
 
-     ["/swagger.json" {:get swagger-json}]
-     ["/*resource" {:get swagger-ui}]]]])
+     ["/swagger.json" {:get swagger/swagger-json}]
+     ["/*resource" {:get swagger/swagger-ui}]]]])
 
 (def service
   {:env                      :dev

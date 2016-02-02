@@ -10,6 +10,8 @@
   :profiles {:dev {:source-paths ["dev" "example"]
                    :dependencies [[org.clojure/tools.namespace "0.2.5"]
                                   [io.pedestal/pedestal.jetty "0.4.1"]
+                                  [clj-http "2.0.1"]
+
                                   [ch.qos.logback/logback-classic "1.1.2"
                                    :exclusions [org.slf4j/slf4j-api]]
                                   [org.slf4j/jcl-over-slf4j "1.7.7"]
