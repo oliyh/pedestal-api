@@ -31,15 +31,13 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
 ```clojure
 (ns pedestal-api-example.service
   (:require [pedestal-api
-             [swagger :refer [doc swagger-ui swagger-json]]
+             [swagger :as swagger]
              [request-params :refer [body-params common-body]]
              [content-negotiation :refer [negotiate-response]]
              [error-handling :refer [error-responses]]
              [routes :refer [defroutes]]]
-            [io.pedestal.interceptor :as i]
-            [route-swagger
-             [interceptor :as sw.int]
-             [doc :as sw.doc]]
+            [io.pedestal.http :as bootstrap]
+            [io.pedestal.interceptor :refer [interceptor]]
             [schema.core :as s]))
 
 (s/defschema Pet
@@ -48,12 +46,12 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
    :age s/Int})
 
 (def create-pet
-  (sw.doc/annotate
+  (swagger/annotate
    {:summary   "Create a pet"
     :parameters {:body-params Pet}
     :responses {201 {:body {:id s/Int
                             :pet Pet}}}}
-   (i/interceptor
+   (interceptor
     {:name  ::create-pet
      :enter (fn [ctx]
               (assoc ctx :response
@@ -62,10 +60,10 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
                              :pet (get-in ctx [:request :body-params])}}))})))
 
 (def get-all-pets
-  (sw.doc/annotate
+  (swagger/annotate
    {:summary   "Get all pets in the store"
     :responses {200 {:body {:total s/Int}}}}
-   (i/interceptor
+   (interceptor
     {:name  ::get-all-pets
      :enter (fn [ctx]
               (assoc ctx :response
@@ -75,18 +73,32 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
 (defroutes routes
   {:info {:title       "Swagger Sample App"
           :description "This is a sample Petstore server."
-          :version     "2.0"}}
+          :version     "2.0"}
+   :tags [{:name         "pets"
+           :description  "Everything about your Pets"
+           :externalDocs {:description "Find out more"
+                          :url         "http://swagger.io"}}
+          {:name        "orders"
+           :description "Operations about orders"}]}
   [[["/" ^:interceptors [error-responses
                          (negotiate-response)
                          (body-params)
                          common-body
-                         (sw.int/coerce-request)
-                         (sw.int/validate-response)]
-     ["/pets"
+                         (swagger/coerce-request)
+                         (swagger/validate-response)]
+     ["/pets" ^:interceptors [(swagger/doc {:tags ["pets"]})]
       {:get get-all-pets
        :post create-pet}]
 
-     ["/swagger.json" {:get swagger-json}]
-     ["/*resource" {:get swagger-ui}]]]])
+     ["/swagger.json" {:get swagger/swagger-json}]
+     ["/*resource" {:get swagger/swagger-ui}]]]])
 
+(def service
+  {:env                      :dev
+   ::bootstrap/routes        #(deref #'routes)
+   ::bootstrap/router        :linear-search
+   ::bootstrap/resource-path "/public"
+   ::bootstrap/type          :jetty
+   ::bootstrap/port          8080
+   ::bootstrap/join?         false})
 ```
