@@ -20,6 +20,9 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
   * e.g. `{:error {:body-params {:age "(not (integer? abc))"}}}`
 * Convenience functions for annotating routes and interceptors
 
+## Build
+[![Circle CI](https://circleci.com/gh/oliyh/pedestal-api.svg?style=svg)](https://circleci.com/gh/oliyh/pedestal-api)
+
 ## Example
 
 ```clojure
