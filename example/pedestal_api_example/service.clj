@@ -1,15 +1,12 @@
 (ns pedestal-api-example.service
   (:require [pedestal-api
-             [swagger :refer [doc swagger-ui swagger-json]]
+             [swagger :as swagger]
              [request-params :refer [body-params common-body]]
              [content-negotiation :refer [negotiate-response]]
              [error-handling :refer [error-responses]]
              [routes :refer [defroutes]]]
             [io.pedestal.http :as bootstrap]
-            [io.pedestal.interceptor :as i]
-            [route-swagger
-             [interceptor :as sw.int]
-             [doc :as sw.doc]]
+            [io.pedestal.interceptor :refer [interceptor]]
             [schema.core :as s]))
 
 (s/defschema Pet
@@ -18,12 +15,12 @@
    :age s/Int})
 
 (def create-pet
-  (sw.doc/annotate
+  (swagger/annotate
    {:summary   "Create a pet"
     :parameters {:body-params Pet}
     :responses {201 {:body {:id s/Int
                             :pet Pet}}}}
-   (i/interceptor
+   (interceptor
     {:name  ::create-pet
      :enter (fn [ctx]
               (assoc ctx :response
@@ -32,10 +29,10 @@
                              :pet (get-in ctx [:request :body-params])}}))})))
 
 (def get-all-pets
-  (sw.doc/annotate
+  (swagger/annotate
    {:summary   "Get all pets in the store"
     :responses {200 {:body {:total s/Int}}}}
-   (i/interceptor
+   (interceptor
     {:name  ::get-all-pets
      :enter (fn [ctx]
               (assoc ctx :response
@@ -56,9 +53,9 @@
                          (negotiate-response)
                          (body-params)
                          common-body
-                         (sw.int/coerce-request)
-                         (sw.int/validate-response)]
-     ["/pets" ^:interceptors [(doc {:tags ["pets"]})]
+                         (swagger/coerce-request)
+                         (swagger/validate-response)]
+     ["/pets" ^:interceptors [(swagger/doc {:tags ["pets"]})]
       {:get get-all-pets
        :post create-pet}]
 

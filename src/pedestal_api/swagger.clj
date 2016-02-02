@@ -1,7 +1,11 @@
 (ns pedestal-api.swagger
   (:require [route-swagger.interceptor :as sw.int]
             [route-swagger.doc :as sw.doc]
-            [io.pedestal.interceptor :as i]))
+            [io.pedestal.interceptor :as i]
+            [potemkin :refer [import-vars]]))
+
+(import-vars [route-swagger.interceptor coerce-request validate-response]
+             [route-swagger.doc annotate])
 
 (def swagger-json (i/interceptor (sw.int/swagger-json)))
 
