@@ -5,7 +5,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [io.pedestal/pedestal.service "0.4.1"]
                  [potemkin "0.4.3"]
-                 [frankiesardo/route-swagger "0.4.5-9-gf0fa5db-SNAPSHOT"]]
+                 [frankiesardo/route-swagger "0.1.0"]]
   :repl-options {:init-ns user}
   :profiles {:dev {:source-paths ["dev" "example"]
                    :dependencies [[org.clojure/tools.namespace "0.2.5"]
