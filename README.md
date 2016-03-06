@@ -23,21 +23,22 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
   * e.g. `{:error {:body-params {:age "(not (integer? abc))"}}}`
 * Convenience functions for annotating routes and interceptors
 
+## Flexibility
+
+pedestal-api is built on top of [route-swagger](https://github.com/frankiesardo/route-swagger) which can still
+be used directly if more flexibility is needed.
+
 ## Build
 [![Circle CI](https://circleci.com/gh/oliyh/pedestal-api.svg?style=svg)](https://circleci.com/gh/oliyh/pedestal-api)
 
 ## Example
 
+See the [example code](https://github.com/oliyh/pedestal-api/tree/master/example) or below:
+
 ```clojure
 (ns pedestal-api-example.service
-  (:require [pedestal-api
-             [swagger :as swagger]
-             [request-params :refer [body-params common-body]]
-             [content-negotiation :refer [negotiate-response]]
-             [error-handling :refer [error-responses]]
-             [routes :refer [defroutes]]]
-            [io.pedestal.http :as bootstrap]
-            [io.pedestal.interceptor :refer [interceptor]]
+  (:require [io.pedestal.interceptor :refer [interceptor]]
+            [pedestal-api.core :as api]
             [schema.core :as s]))
 
 (s/defschema Pet
@@ -46,7 +47,7 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
    :age s/Int})
 
 (def create-pet
-  (swagger/annotate
+  (api/annotate
    {:summary   "Create a pet"
     :parameters {:body-params Pet}
     :responses {201 {:body {:id s/Int
@@ -60,7 +61,7 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
                              :pet (get-in ctx [:request :body-params])}}))})))
 
 (def get-all-pets
-  (swagger/annotate
+  (api/annotate
    {:summary   "Get all pets in the store"
     :responses {200 {:body {:total s/Int}}}}
    (interceptor
@@ -70,7 +71,7 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
                      {:status 200
                       :body {:total 0}}))})))
 
-(defroutes routes
+(api/defroutes routes
   {:info {:title       "Swagger Sample App"
           :description "This is a sample Petstore server."
           :version     "2.0"}
@@ -80,18 +81,18 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
                           :url         "http://swagger.io"}}
           {:name        "orders"
            :description "Operations about orders"}]}
-  [[["/" ^:interceptors [error-responses
-                         (negotiate-response)
-                         (body-params)
-                         common-body
-                         (swagger/coerce-request)
-                         (swagger/validate-response)]
-     ["/pets" ^:interceptors [(swagger/doc {:tags ["pets"]})]
+  [[["/" ^:interceptors [api/error-responses
+                         (api/negotiate-response)
+                         (api/body-params)
+                         api/common-body
+                         (api/coerce-request)
+                         (api/validate-response)]
+     ["/pets" ^:interceptors [(api/doc {:tags ["pets"]})]
       {:get get-all-pets
        :post create-pet}]
 
-     ["/swagger.json" {:get swagger/swagger-json}]
-     ["/*resource" {:get swagger/swagger-ui}]]]])
+     ["/swagger.json" {:get api/swagger-json}]
+     ["/*resource" {:get api/swagger-ui}]]]])
 
 (def service
   {:env                      :dev
