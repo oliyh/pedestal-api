@@ -1,5 +1,6 @@
 (ns pedestal-api-example.service
-  (:require [io.pedestal.interceptor :refer [interceptor]]
+  (:require [io.pedestal.http :as bootstrap]
+            [io.pedestal.interceptor :refer [interceptor]]
             [pedestal-api.core :as api]
             [schema.core :as s]))
 
