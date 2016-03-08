@@ -52,17 +52,17 @@
 
 (api/defroutes routes
   {}
-  [[["/" ^:interceptors [error-responses
-                         (negotiate-response)
-                         (body-params)
-                         common-body
-                         (swagger/coerce-request)
-                         (swagger/validate-response)]
+  [[["/" ^:interceptors [api/error-responses
+                         (api/negotiate-response)
+                         (api/body-params)
+                         api/common-body
+                         (api/coerce-request)
+                         (api/validate-response)]
      ["/pets"
       {:get get-all-pets
        :post create-pet}
       ["/:name" {:get get-pet-by-name}]]
-     ["/swagger.json" {:get swagger/swagger-json}]]]])
+     ["/swagger.json" {:get api/swagger-json}]]]])
 
 (def service
   {:env                      :dev
