@@ -1,10 +1,7 @@
 (ns pedestal-api.integration-tests
   (:require [pedestal-api
-             [swagger :as swagger]
-             [request-params :refer [body-params common-body]]
-             [content-negotiation :refer [negotiate-response]]
-             [error-handling :refer [error-responses]]
-             [routes :refer [defroutes]]]
+             [core :as api]
+             [helpers :refer [defhandler]]]
             [io.pedestal.http :as bootstrap]
             [io.pedestal.interceptor :refer [interceptor]]
             [io.pedestal.http.route :refer [url-for-routes]]
@@ -22,7 +19,7 @@
    :age s/Int})
 
 (def create-pet
-  (swagger/annotate
+  (api/annotate
    {:parameters {:body-params Pet}
     :responses {201 {:body {:pet Pet}}}}
    (interceptor
@@ -33,7 +30,7 @@
                       :body {:pet (get-in ctx [:request :body-params])}}))})))
 
 (def get-all-pets
-  (swagger/annotate
+  (api/annotate
    {:responses {200 {:body [Pet]}}}
    (interceptor
     {:name  ::get-all-pets
@@ -44,7 +41,16 @@
                               :type "dog"
                               :age 6}]}))})))
 
-(defroutes routes
+(defhandler get-pet-by-name
+  {:parameters {:path-params {:name s/Str}}
+   :responses {200 {:body Pet}}}
+  [{:keys [path-params]}]
+  {:status 200
+   :body {:name (:name path-params)
+          :type "dog"
+          :age 6}})
+
+(api/defroutes routes
   {}
   [[["/" ^:interceptors [error-responses
                          (negotiate-response)
@@ -54,7 +60,8 @@
                          (swagger/validate-response)]
      ["/pets"
       {:get get-all-pets
-       :post create-pet}]
+       :post create-pet}
+      ["/:name" {:get get-pet-by-name}]]
      ["/swagger.json" {:get swagger/swagger-json}]]]])
 
 (def service
@@ -167,6 +174,14 @@
                                                       :as :byte-array})]
       (is (= 201 (:status response)))
       (is (= {:pet pet} (transit-read-bytes (:body response) :msgpack))))))
+
+(deftest helpers-test
+  (let [response (http/get (url-for ::get-pet-by-name :path-params {:name "Keiran"}))]
+    (is (= 200 (:status response)))
+    (is (= {:name "Keiran"
+            :type "dog"
+            :age 6}
+           (json/decode (:body response) keyword)))))
 
 (deftest schema-errors-test
   (let [response (http/post (url-for ::create-pet) {:body (json/encode {:name "Bob" :type "dog" :age "abc"})
