@@ -8,7 +8,7 @@
      `(def ~name#
         (swagger/annotate ~swagger#
                           (@~(ns-resolve 'io.pedestal.interceptor.helpers '~helper-name)
-                           (keyword ~name#)
+                           (keyword (name (ns-name *ns*)) (name '~name#))
                            (fn ~@args#))))))
 
 ;; shadows helper macros in io.pedestal.interceptor.helpers
@@ -22,7 +22,6 @@
 ;; Note that pedestal recommends building interceptors directly, e.g.
 ;; (i/interceptor {:name ::my-interceptor
 ;;                 :before (fn [context] ... )
-
 
 (defhelper before)
 (defhelper after)
