@@ -1,11 +1,11 @@
 (ns pedestal-api-example.service
-  (:require [io.pedestal.http :as bootstrap]
+  (:require [io.pedestal.impl.interceptor :refer [terminate]]
             [io.pedestal.interceptor :refer [interceptor]]
             [pedestal-api
              [core :as api]
-             [helpers :refer [handler defhandler]]]
+             [helpers :refer [before defbefore defhandler handler]]]
             [schema.core :as s])
-  (:import [java.util UUID]))
+  (:import java.util.UUID))
 
 (defonce the-pets (atom {}))
 
@@ -43,23 +43,59 @@
        {:status 201
         :body {:id id}}))))
 
-;; Example of using the defhandler helper
-(defhandler load-pet
+;; Example using the defbefore helper
+(defbefore load-pet
   {:summary    "Load a pet by id"
+   :parameters {:path-params {:id s/Uuid}}
+   :responses  {404 {:body s/Str}}}
+  [{:keys [request] :as context}]
+  (if-let [pet (get @the-pets (get-in request [:path-params :id]))]
+    (update context :request assoc :pet pet)
+    (-> context terminate (assoc :response {:status 404
+                                            :body "No pet found with this id"}))))
+
+;; Example of using the defhandler helper
+(defhandler get-pet
+  {:summary    "Get a pet by id"
    :parameters {:path-params {:id s/Uuid}}
    :responses  {200 {:body PetWithId}
                 404 {:body s/Str}}}
-  [{:keys [path-params] :as request}]
-  (if-let [pet (get @the-pets (:id path-params))]
-    {:status 200
-     :body pet}
-    {:status 404
-     :body "No pet found with that id"}))
+  [{:keys [pet] :as request}]
+  {:status 200
+   :body pet})
+
+(def update-pet
+  "Example of using the before helper"
+  (before
+   ::update-pet
+   {:summary    "Update a pet"
+    :parameters {:path-params {:id s/Uuid}
+                 :body-params Pet}
+    :responses  {200 {:body s/Str}}}
+   (fn [{:keys [request]}]
+     (swap! the-pets update (get-in request [:path-params :id]) merge (:body-params request))
+     {:status 200
+      :body "Pet updated"})))
+
+(def delete-pet
+  "Example of annotating a generic interceptor"
+  (api/annotate
+   {:summary    "Delete a pet by id"
+    :parameters {:path-params {:id s/Uuid}}
+    :responses  {200 {:body s/Str}}}
+   (interceptor
+    {:name  ::delete-pet
+     :enter (fn [ctx]
+              (let [pet (get-in ctx [:request :pet])]
+                (swap! the-pets dissoc (:id pet))
+                (assoc ctx :response
+                       {:status 200
+                        :body (str "Deleted " (:name pet))})))})))
 
 (s/with-fn-validation
   (api/defroutes routes
-    {:info {:title       "Swagger Sample App"
-            :description "This is a sample Petstore server."
+    {:info {:title       "Swagger Sample App built using pedestal-api"
+            :description "Find out more at https://github.com/oliyh/pedestal-api"
             :version     "2.0"}
      :tags [{:name         "pets"
              :description  "Everything about your Pets"
@@ -76,7 +112,10 @@
        ["/pets" ^:interceptors [(api/doc {:tags ["pets"]})]
         ["/" {:get all-pets
               :post create-pet}]
-        ["/:id" {:get load-pet}]]
+        ["/:id" ^:interceptors [load-pet]
+         {:get get-pet
+          :put update-pet
+          :delete delete-pet}]]
 
        ["/swagger.json" {:get api/swagger-json}]
        ["/*resource" {:get api/swagger-ui}]]]]))
