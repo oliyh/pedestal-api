@@ -1,4 +1,4 @@
-(defproject pedestal-api "0.1.0"
+(defproject pedestal-api "0.2.0-SNAPSHOT"
   :description "A batteries-included API for Pedestal using Swagger"
   :url "https://github.com/oliyh/pedestal-api"
   :license {:name "Eclipse Public License"
