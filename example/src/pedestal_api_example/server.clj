@@ -8,6 +8,7 @@
   (alter-var-root #'service-instance
                   (constantly (bootstrap/create-server
                                (-> service/service
+                                   (assoc ::bootstrap/port (Integer. (or (System/getenv "PORT") 8080)))
                                    (bootstrap/default-interceptors))))))
 
 (defn start []
@@ -17,3 +18,7 @@
 (defn stop []
   (when service-instance
     (bootstrap/stop service-instance)))
+
+(defn -main [& args]
+  (create-server)
+  (start))

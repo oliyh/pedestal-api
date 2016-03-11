@@ -1,11 +1,15 @@
 /target
 /classes
 /checkouts
+/logs
+/db
+webhook-url.txt
 pom.xml
 pom.xml.asc
 *.jar
 *.class
 /.lein-*
-!/.lein-classpath
 /.nrepl-port
-*.iml
+/example/logs
+/example/target
+/example/.nrepl-port
