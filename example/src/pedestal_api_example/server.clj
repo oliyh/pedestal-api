@@ -1,6 +1,7 @@
 (ns pedestal-api-example.server
   (:require [pedestal-api-example.service :as service]
-            [io.pedestal.http :as bootstrap]))
+            [io.pedestal.http :as bootstrap])
+  (:gen-class))
 
 (defonce service-instance nil)
 

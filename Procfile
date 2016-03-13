@@ -1,0 +1,1 @@
+web: java $JVM_OPTS -jar example/target/uberjar/pedestal-api-example-standalone.jar
