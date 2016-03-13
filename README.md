@@ -35,7 +35,8 @@ be used directly if more flexibility is needed.
 
 ## Example
 
-See the [example code](https://github.com/oliyh/pedestal-api/tree/master/example) or below:
+See the [example code](https://github.com/oliyh/pedestal-api/tree/master/example) (reproduced below)
+can be seen running on Heroku at [https://pedestal-api.herokuapp.com]:
 
 ```clojure
 (ns pedestal-api-example.service
