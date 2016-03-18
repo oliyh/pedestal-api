@@ -1,4 +1,4 @@
-(ns pedestal-api.integration-tests
+(ns pedestal-api.integration-test
   (:require [pedestal-api
              [core :as api]
              [helpers :refer [defhandler]]]
@@ -50,6 +50,13 @@
           :type "dog"
           :age 6}})
 
+(defhandler events
+  {:parameters {:path-params {:topic (s/constrained s/Str #(re-find #"/" %))}}
+   :responses {200 {:body s/Str}}}
+  [{:keys [path-params]}]
+  {:status 200
+   :body (:topic path-params)})
+
 (api/defroutes routes
   {}
   [[["/" ^:interceptors [api/error-responses
@@ -62,6 +69,7 @@
       {:get get-all-pets
        :post create-pet}
       ["/:name" {:get get-pet-by-name}]]
+     ["/events/*topic" {:get events}]
      ["/swagger.json" {:get api/swagger-json}]]]])
 
 (def service
@@ -191,7 +199,13 @@
     (is (= "{:error {:body-params {:age \"(not (integer? abc))\"}}}"
            (:body response)))))
 
+(deftest splat-params-test
+  (let [response (http/get (url-for ::events :path-params {:topic "foo/bar"}))]
+    (is (= 200 (:status response)))
+    (is (= "foo/bar" (:body response)))))
+
 (deftest swagger-schema-test
   (let [response (http/get (url-for ::route-swagger.doc/swagger-json) {:as :json})]
     (is (= 200 (:status response)))
-    (is (:body response))))
+    (is (:body response))
+    (is (get-in response [:body :paths (keyword "/events/{topic}")]))))
