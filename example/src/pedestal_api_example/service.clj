@@ -1,7 +1,9 @@
 (ns pedestal-api-example.service
-  (:require [io.pedestal.http :as bootstrap]
+  (:require [clojure.core.async :as a]
+            [io.pedestal.http :as bootstrap]
             [io.pedestal.impl.interceptor :refer [terminate]]
             [io.pedestal.interceptor :refer [interceptor]]
+            [io.pedestal.http.sse :as sse]
             [pedestal-api
              [core :as api]
              [helpers :refer [before defbefore defhandler handler]]]
@@ -93,6 +95,30 @@
                        {:status 200
                         :body (str "Deleted " (:name pet))})))})))
 
+(defn- initialise-stream [event-channel context]
+  (a/go-loop []
+    (a/>! event-channel {:data {:id (UUID/randomUUID)
+                                :event (rand-nth ["Deleted" "Created" "Updated"])}})
+    (a/<! (a/timeout 1000))
+    (recur)))
+
+(def pet-events
+  (api/annotate
+   {:summary "Events relating to pets"
+    :description "A Server Side Event stream with events about pets"
+    :parameters {}
+    :responses {200 {:body {:id s/Uuid
+                            :event s/Str}}}}
+   (sse/start-event-stream initialise-stream)))
+
+(defn- validate-responser [schema response]
+  (def s schema)
+  (if (satisfies? clojure.core.async.impl.protocols/Channel (:body response))
+    (let [coercer (schema.coerce/coercer (:body schema) {})]
+      (a/map (fn [event]
+               (coercer event)) (:body response)))
+    response))
+
 (s/with-fn-validation
   (api/defroutes routes
     {:info {:title       "Swagger Sample App built using pedestal-api"
@@ -109,10 +135,11 @@
                            (api/body-params)
                            api/common-body
                            (api/coerce-request)
-                           (api/validate-response)]
+                           (api/validate-response validate-responser)]
        ["/pets" ^:interceptors [(api/doc {:tags ["pets"]})]
         ["/" {:get all-pets
               :post create-pet}]
+        ["/events" {:get pet-events}]
         ["/:id" ^:interceptors [load-pet]
          {:get get-pet
           :put update-pet
