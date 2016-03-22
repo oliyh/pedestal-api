@@ -96,11 +96,13 @@
                         :body (str "Deleted " (:name pet))})))})))
 
 (defn- initialise-stream [event-channel context]
-  (a/go-loop []
+  (a/go-loop [sent-count 0]
     (a/>! event-channel {:data {:id (UUID/randomUUID)
                                 :event (rand-nth ["Deleted" "Created" "Updated"])}})
-    (a/<! (a/timeout 1000))
-    (recur)))
+    (a/<! (a/timeout 100))
+    (if (< sent-count 10)
+      (recur (inc sent-count))
+      (a/close! event-channel))))
 
 (def pet-events
   (api/annotate
@@ -115,8 +117,10 @@
   (def s schema)
   (if (satisfies? clojure.core.async.impl.protocols/Channel (:body response))
     (let [coercer (schema.coerce/coercer (:body schema) {})]
-      (a/map (fn [event]
-               (coercer event)) (:body response)))
+      (def r response)
+      (assoc response :body (a/map (fn [event]
+                                     (println "Coercing event" (String. event))
+                                     (coercer event)) [(:body response)])))
     response))
 
 (s/with-fn-validation
