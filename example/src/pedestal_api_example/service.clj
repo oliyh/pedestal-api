@@ -29,6 +29,7 @@
    (interceptor
     {:name  ::all-pets
      :enter (fn [ctx]
+              (def c ctx)
               (assoc ctx :response
                      {:status 200
                       :body {:pets (vals @the-pets)}}))})))
@@ -97,7 +98,8 @@
 
 (defn- initialise-stream [event-channel context]
   (a/go-loop [sent-count 0]
-    (a/>! event-channel {:data {:id (UUID/randomUUID)
+    (a/>! event-channel {:name "PetEvent"
+                         :data {:id (UUID/randomUUID)
                                 :event (rand-nth ["Deleted" "Created" "Updated"])}})
     (a/<! (a/timeout 100))
     (if (< sent-count 10)
@@ -109,19 +111,17 @@
    {:summary "Events relating to pets"
     :description "A Server Side Event stream with events about pets"
     :parameters {}
-    :responses {200 {:body {:id s/Uuid
-                            :event s/Str}}}}
+    :responses {200 {:body {:name s/Str
+                            :data {:id s/Uuid
+                                   :event s/Str}}}}}
    (sse/start-event-stream initialise-stream)))
 
-(defn- validate-responser [schema response]
-  (def s schema)
+(defn- response-validator [schema response]
   (if (satisfies? clojure.core.async.impl.protocols/Channel (:body response))
     (let [coercer (schema.coerce/coercer (:body schema) {})]
-      (def r response)
-      (assoc response :body (a/map (fn [event]
-                                     (println "Coercing event" (String. event))
-                                     (coercer event)) [(:body response)])))
-    response))
+      (assoc response :body (a/map coercer [(:body response)])))
+    (let [coercer (route-swagger.schema/make-validate-response)]
+      (coercer schema response))))
 
 (s/with-fn-validation
   (api/defroutes routes
@@ -139,7 +139,7 @@
                            (api/body-params)
                            api/common-body
                            (api/coerce-request)
-                           (api/validate-response validate-responser)]
+                           (api/validate-response response-validator)]
        ["/pets" ^:interceptors [(api/doc {:tags ["pets"]})]
         ["/" {:get all-pets
               :post create-pet}]
