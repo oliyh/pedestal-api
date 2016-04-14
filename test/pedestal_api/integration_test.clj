@@ -1,4 +1,4 @@
-(ns pedestal-api.integration-tests
+(ns pedestal-api.integration-test
   (:require [pedestal-api
              [core :as api]
              [helpers :refer [defhandler]]]
@@ -31,7 +31,8 @@
 
 (def get-all-pets
   (api/annotate
-   {:responses {200 {:body [Pet]}}}
+   {:parameters {:query-params {(s/optional-key :sort) (s/enum :asc :desc)}}
+    :responses {200 {:body [Pet]}}}
    (interceptor
     {:name  ::get-all-pets
      :enter (fn [ctx]
@@ -182,6 +183,14 @@
             :type "dog"
             :age 6}
            (json/decode (:body response) keyword)))))
+
+(deftest optional-parameters-test
+  (let [response (http/get (url-for ::get-all-pets) {:headers {"Content-Type" "application/json"}})]
+    (is (= 200 (:status response))))
+
+  (let [response (http/get (url-for ::get-all-pets :query-params {:sort "asc"})
+                           {:headers {"Content-Type" "application/json"}})]
+    (is (= 200 (:status response)))))
 
 (deftest schema-errors-test
   (let [response (http/post (url-for ::create-pet) {:body (json/encode {:name "Bob" :type "dog" :age "abc"})

@@ -22,14 +22,17 @@
   "Example of annotating a generic interceptor"
   (api/annotate
    {:summary    "Get all pets in the store"
-    :parameters {}
+    :parameters {:query-params {(s/optional-key :sort) (s/enum :asc :desc)}}
     :responses  {200 {:body {:pets [PetWithId]}}}}
    (interceptor
     {:name  ::all-pets
      :enter (fn [ctx]
               (assoc ctx :response
                      {:status 200
-                      :body {:pets (vals @the-pets)}}))})))
+                      :body {:pets (let [sort (get-in ctx [:request :query-params :sort])]
+                                     (cond->> (vals @the-pets)
+                                       sort (sort-by :name)
+                                       (= :desc sort) reverse))}}))})))
 
 (def create-pet
   "Example of using the handler helper"

@@ -7,13 +7,23 @@
             [clojure.set :as set]
             [linked.core :as linked]))
 
+(defn- merge-empty-params [request]
+  (merge-with merge
+              request
+              {:body-params {}
+               :form-params {}
+               :query-params {}
+               :path-params {}
+               :headers {}}))
+
 (defn- normalise-params [request]
   (-> request
       (set/rename-keys {:edn-params       :body-params
                         :json-params      :body-params
                         :transit-params   :body-params
                         :multipart-params :form-params})
-      (update :form-params walk/keywordize-keys)))
+      (update :form-params walk/keywordize-keys)
+      merge-empty-params))
 
 (def common-body
   (i/interceptor
