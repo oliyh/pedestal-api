@@ -4,7 +4,8 @@ A batteries-included API for Pedestal using Swagger
 ## Download
 [![Clojars Project](https://img.shields.io/clojars/v/pedestal-api.svg)](https://clojars.org/pedestal-api)
 
-Note that you must provide pedestal within your own project's dependencies.
+Note that you must provide pedestal within your own project's dependencies, and that due to
+[breaking changes](https://github.com/pedestal/pedestal/releases/tag/0.5.0) it must be `pedestal 0.5.0` or higher.
 
 ## Swagger
 A [Swagger](http://swagger.io) API with input and output validation and coercion as provided by [route-swagger](https://github.com/frankiesardo/route-swagger).
