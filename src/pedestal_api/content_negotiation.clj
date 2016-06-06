@@ -1,7 +1,7 @@
 (ns pedestal-api.content-negotiation
   (:require [clojure.string :as string]
             [io.pedestal.http :as service]
-            [io.pedestal.impl.interceptor :refer [terminate]]
+            [io.pedestal.interceptor.chain :refer [terminate]]
             [io.pedestal.interceptor.helpers :as interceptor]
             [linked.core :as linked]
             [route-swagger.doc :as sw.doc]
@@ -63,5 +63,5 @@
      (fn [{:keys [request] :as ctx}]
        (if-let [i (or (find-interceptor serialisation-interceptors (get-in request [:headers "accept"]))
                       default-serialiser)]
-         (update ctx :io.pedestal.impl.interceptor/stack conj i)
+         (update ctx :io.pedestal.interceptor.chain/stack conj i)
          ctx))))))
