@@ -8,10 +8,10 @@
                  [io.pedestal/pedestal.service "0.5.0"]
                  [io.pedestal/pedestal.jetty "0.5.0"]
 
-                 [ch.qos.logback/logback-classic "1.1.6" :exclusions [org.slf4j/slf4j-api]]
-                 [org.slf4j/jul-to-slf4j "1.7.18"]
-                 [org.slf4j/jcl-over-slf4j "1.7.18"]
-                 [org.slf4j/log4j-over-slf4j "1.7.18"]
+                 [ch.qos.logback/logback-classic "1.1.7" :exclusions [org.slf4j/slf4j-api]]
+                 [org.slf4j/jul-to-slf4j "1.7.21"]
+                 [org.slf4j/jcl-over-slf4j "1.7.21"]
+                 [org.slf4j/log4j-over-slf4j "1.7.21"]
                  [org.clojure/tools.logging "0.3.1"]]
   :main ^:skip-aot pedestal_api_example.server
   :target-path "target/%s"
