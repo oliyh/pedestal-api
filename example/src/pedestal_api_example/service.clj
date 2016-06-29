@@ -23,8 +23,7 @@
   (api/annotate
    {:summary     "Get all pets in the store"
     :parameters  {:query-params {(s/optional-key :sort) (s/enum :asc :desc)}}
-    :responses   {200 {:body {:pets [PetWithId]}}}
-    :operationId :all-pets}
+    :responses   {200 {:body {:pets [PetWithId]}}}}
    (interceptor
     {:name  ::all-pets
      :enter (fn [ctx]
@@ -41,8 +40,7 @@
    ::create-pet
    {:summary     "Create a pet"
     :parameters  {:body-params Pet}
-    :responses   {201 {:body {:id s/Uuid}}}
-    :operationId :create-pet}
+    :responses   {201 {:body {:id s/Uuid}}}}
    (fn [request]
      (let [id (UUID/randomUUID)]
        (swap! the-pets assoc id (assoc (:body-params request) :id id))
@@ -65,8 +63,7 @@
   {:summary     "Get a pet by id"
    :parameters  {:path-params {:id s/Uuid}}
    :responses   {200 {:body PetWithId}
-                 404 {:body s/Str}}
-   :operationId :get-pet}
+                 404 {:body s/Str}}}
   [{:keys [pet] :as request}]
   {:status 200
    :body pet})
@@ -78,8 +75,7 @@
    {:summary     "Update a pet"
     :parameters  {:path-params {:id s/Uuid}
                   :body-params Pet}
-    :responses   {200 {:body s/Str}}
-    :operationId :update-pet}
+    :responses   {200 {:body s/Str}}}
    (fn [{:keys [request]}]
      (swap! the-pets update (get-in request [:path-params :id]) merge (:body-params request))
      {:status 200
@@ -90,8 +86,7 @@
   (api/annotate
    {:summary     "Delete a pet by id"
     :parameters  {:path-params {:id s/Uuid}}
-    :responses   {200 {:body s/Str}}
-    :operationId :delete-pet}
+    :responses   {200 {:body s/Str}}}
    (interceptor
     {:name  ::delete-pet
      :enter (fn [ctx]

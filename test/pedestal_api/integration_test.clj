@@ -58,20 +58,21 @@
   {:status 200
    :body (:topic path-params)})
 
-(api/defroutes routes
-  {}
-  [[["/" ^:interceptors [api/error-responses
-                         (api/negotiate-response)
-                         (api/body-params)
-                         api/common-body
-                         (api/coerce-request)
-                         (api/validate-response)]
-     ["/pets"
-      {:get get-all-pets
-       :post create-pet}
-      ["/:name" {:get get-pet-by-name}]]
-     ["/events/*topic" {:get events}]
-     ["/swagger.json" {:get api/swagger-json}]]]])
+(s/with-fn-validation
+  (api/defroutes routes
+    {}
+    [[["/" ^:interceptors [api/error-responses
+                           (api/negotiate-response)
+                           (api/body-params)
+                           api/common-body
+                           (api/coerce-request)
+                           (api/validate-response)]
+       ["/pets"
+        {:get get-all-pets
+         :post create-pet}
+        ["/:name" {:get get-pet-by-name}]]
+       ["/events/*topic" {:get events}]
+       ["/swagger.json" {:get api/swagger-json}]]]]))
 
 (def service
   {:env                      :dev
@@ -217,4 +218,5 @@
   (let [response (http/get (url-for ::route-swagger.doc/swagger-json) {:as :json})]
     (is (= 200 (:status response)))
     (is (:body response))
-    (is (get-in response [:body :paths (keyword "/events/{topic}")]))))
+    (is (get-in response [:body :paths (keyword "/events/{topic}")]))
+    (is (= "events" (get-in response [:body :paths (keyword "/events/{topic}") :get :operationId])))))
