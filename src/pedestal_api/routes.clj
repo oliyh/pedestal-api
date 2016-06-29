@@ -24,4 +24,4 @@
                route/expand-routes
                replace-splat-parameters
                default-operation-ids
-               (sw.doc/with-swagger ~doc))))
+               (sw.doc/with-swagger (merge {:basePath "/"} ~doc)))))
