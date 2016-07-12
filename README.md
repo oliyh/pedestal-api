@@ -1,5 +1,9 @@
 # pedestal-api
-A batteries-included API for Pedestal using Swagger
+A batteries-included API for Pedestal using Swagger.
+
+**pedestal-api** is a library for building APIs on the pedestal web server.
+It implements the parts of HTTP that are useful for APIs and allows you to document your handlers and middleware
+using idiomatic Clojure and generate a compliant Swagger specification.
 
 ## Download
 [![Clojars Project](https://img.shields.io/clojars/v/pedestal-api.svg)](https://clojars.org/pedestal-api)
@@ -7,10 +11,9 @@ A batteries-included API for Pedestal using Swagger
 Note that you must provide pedestal within your own project's dependencies, and that due to
 [breaking changes](https://github.com/pedestal/pedestal/releases/tag/0.5.0) it must be `pedestal 0.5.0` or higher.
 
-## Swagger
-A [Swagger](http://swagger.io) API with input and output validation and coercion as provided by [route-swagger](https://github.com/frankiesardo/route-swagger).
+## Features
 
-## Batteries
+* A [Swagger](http://swagger.io) API with input and output validation and coercion as provided by [route-swagger](https://github.com/frankiesardo/route-swagger).
 * Content deserialisation, including:
   * `application/json`
   * `application/edn`
@@ -29,10 +32,8 @@ A [Swagger](http://swagger.io) API with input and output validation and coercion
 ## Flexibility
 
 pedestal-api is built on top of [route-swagger](https://github.com/frankiesardo/route-swagger) which can still
-be used directly if more flexibility is needed.
-
-## Build
-[![Circle CI](https://circleci.com/gh/oliyh/pedestal-api.svg?style=svg)](https://circleci.com/gh/oliyh/pedestal-api)
+be used directly if more flexibility is needed. Interceptors are provided but not wired in, allowing you to choose
+those which suit you best.
 
 ## Example
 
@@ -182,3 +183,6 @@ can be seen running on Heroku at https://pedestal-api.herokuapp.com
    ::bootstrap/port          8080
    ::bootstrap/join?         false})
 ```
+
+## Build
+[![Circle CI](https://circleci.com/gh/oliyh/pedestal-api.svg?style=svg)](https://circleci.com/gh/oliyh/pedestal-api)
