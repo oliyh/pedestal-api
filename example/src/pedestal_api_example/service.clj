@@ -5,8 +5,7 @@
             [pedestal-api
              [core :as api]
              [helpers :refer [before defbefore defhandler handler]]]
-            [schema.core :as s])
-  (:import java.util.UUID))
+            [schema.core :as s]))
 
 (defonce the-pets (atom {}))
 
@@ -16,7 +15,7 @@
    :age s/Int})
 
 (s/defschema PetWithId
-  (assoc Pet (s/optional-key :id) s/Uuid))
+  (assoc Pet (s/optional-key :id) s/Int))
 
 (def all-pets
   "Example of annotating a generic interceptor"
@@ -40,9 +39,9 @@
    ::create-pet
    {:summary     "Create a pet"
     :parameters  {:body-params Pet}
-    :responses   {201 {:body {:id s/Uuid}}}}
+    :responses   {201 {:body {:id s/Int}}}}
    (fn [request]
-     (let [id (UUID/randomUUID)]
+     (let [id (inc (count @the-pets))]
        (swap! the-pets assoc id (assoc (:body-params request) :id id))
        {:status 201
         :body {:id id}}))))
@@ -50,7 +49,7 @@
 ;; Example using the defbefore helper
 (defbefore load-pet
   {:summary    "Load a pet by id"
-   :parameters {:path-params {:id s/Uuid}}
+   :parameters {:path-params {:id s/Int}}
    :responses  {404 {:body s/Str}}}
   [{:keys [request] :as context}]
   (if-let [pet (get @the-pets (get-in request [:path-params :id]))]
@@ -61,7 +60,7 @@
 ;; Example of using the defhandler helper
 (defhandler get-pet
   {:summary     "Get a pet by id"
-   :parameters  {:path-params {:id s/Uuid}}
+   :parameters  {:path-params {:id s/Int}}
    :responses   {200 {:body PetWithId}
                  404 {:body s/Str}}}
   [{:keys [pet] :as request}]
@@ -73,7 +72,7 @@
   (before
    ::update-pet
    {:summary     "Update a pet"
-    :parameters  {:path-params {:id s/Uuid}
+    :parameters  {:path-params {:id s/Int}
                   :body-params Pet}
     :responses   {200 {:body s/Str}}}
    (fn [{:keys [request]}]
@@ -85,7 +84,7 @@
   "Example of annotating a generic interceptor"
   (api/annotate
    {:summary     "Delete a pet by id"
-    :parameters  {:path-params {:id s/Uuid}}
+    :parameters  {:path-params {:id s/Int}}
     :responses   {200 {:body s/Str}}}
    (interceptor
     {:name  ::delete-pet
