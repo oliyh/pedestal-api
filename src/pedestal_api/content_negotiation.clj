@@ -40,21 +40,21 @@
   ([] (negotiate-response default-serialisation-interceptors))
   ([serialisation-interceptors] (negotiate-response serialisation-interceptors service/json-body))
   ([serialisation-interceptors default-serialiser]
-   (sw.doc/annotate
-    {:produces (keys serialisation-interceptors)
-     ;; :responses {406 {}} see comment below
-     }
-    (interceptor/around
-     ::serialise-response
+   (let [delegate (pcn/negotiate-content (keys serialisation-interceptors) {:no-match-fn identity})]
+     (sw.doc/annotate
+      {:produces (keys serialisation-interceptors)
+       ;; :responses {406 {}} see comment below
+       }
+      (interceptor/around
+       ::serialise-response
 
-     (fn [ctx]
-       (enqueue* ctx (pcn/negotiate-content (keys serialisation-interceptors) {:no-match-fn identity})))
+       (fn [ctx] ((:enter delegate) ctx))
 
-     (fn [{:keys [request] :as ctx}]
-       (if-let [i (or (find-interceptor serialisation-interceptors (get-in request [:accept :field]))
-                      default-serialiser)]
-         (update ctx :io.pedestal.interceptor.chain/stack conj i)
-         ctx))))))
+       (fn [{:keys [request] :as ctx}]
+         (if-let [i (or (find-interceptor serialisation-interceptors (get-in request [:accept :field]))
+                        default-serialiser)]
+           ((:leave i) ctx)
+           ctx)))))))
 
 ;; turned off until can work out what to do with things like text/plain,text/html,image/jpg etc
 #_(fn [{:keys [request] :as ctx}]
