@@ -13,13 +13,13 @@
                                    (bootstrap/default-interceptors))))))
 
 (defn start []
-  (when service-instance
-    (bootstrap/start service-instance)))
+  (when-not service-instance
+    (create-server))
+  (bootstrap/start service-instance))
 
 (defn stop []
   (when service-instance
     (bootstrap/stop service-instance)))
 
 (defn -main [& args]
-  (create-server)
   (start))
