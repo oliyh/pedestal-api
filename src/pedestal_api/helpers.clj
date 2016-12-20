@@ -3,7 +3,7 @@
             [pedestal-api.swagger :as swagger]))
 
 (defmacro defhelper [helper-name]
-  `(do (defmacro ~(symbol (str "def" helper-name))
+  `(do (defmacro ~(symbol helper-name)
          [name# swagger# & args#]
          `(def ~name#
             (swagger/annotate ~swagger#
@@ -42,10 +42,10 @@
 ;;
 ;; All these forms create equivalent interceptors.
 
-(defhelper before)
-(defhelper after)
-(defhelper around)
-(defhelper on-request)
-(defhelper on-response)
-(defhelper handler)
-(defhelper middleware)
+(defhelper defbefore)
+(defhelper defafter)
+(defhelper defaround)
+(defhelper defon-request)
+(defhelper defon-response)
+(defhelper defhandler)
+(defhelper defmiddleware)
