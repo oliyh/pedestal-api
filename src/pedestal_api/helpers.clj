@@ -1,20 +1,22 @@
 (ns pedestal-api.helpers
   (:require [io.pedestal.interceptor.helpers]
-            [pedestal-api.swagger :as swagger]))
+            [pedestal-api.swagger :as swagger]
+            [clojure.string :as string]))
 
 (defmacro defhelper [helper-name]
-  `(do (defmacro ~(symbol (str "def" helper-name))
-         [name# swagger# & args#]
-         `(def ~name#
-            (swagger/annotate ~swagger#
-                              (@~(ns-resolve 'io.pedestal.interceptor.helpers '~helper-name)
-                               (keyword (name (ns-name *ns*)) (name '~name#))
-                               (fn ~@args#)))))
+  (let [helper-fn-name (symbol (string/replace helper-name "def" ""))]
+    `(do (defmacro ~(symbol helper-name)
+           [name# swagger# & args#]
+           `(def ~name#
+              (swagger/annotate ~swagger#
+                                (@~(ns-resolve 'io.pedestal.interceptor.helpers '~helper-fn-name)
+                                 (keyword (name (ns-name *ns*)) (name '~name#))
+                                 (fn ~@args#)))))
 
-       (defn ~helper-name [name# swagger# & args#]
-         (swagger/annotate
-          swagger#
-          (apply @~(ns-resolve 'io.pedestal.interceptor.helpers helper-name) name# args#)))))
+         (defn ~helper-fn-name [name# swagger# & args#]
+           (swagger/annotate
+            swagger#
+            (apply @~(ns-resolve 'io.pedestal.interceptor.helpers helper-fn-name) name# args#))))))
 
 ;; shadows helper macros in io.pedestal.interceptor.helpers
 ;; adding swagger metadata as the second argument, e.g.
@@ -42,10 +44,10 @@
 ;;
 ;; All these forms create equivalent interceptors.
 
-(defhelper before)
-(defhelper after)
-(defhelper around)
-(defhelper on-request)
-(defhelper on-response)
-(defhelper handler)
-(defhelper middleware)
+(defhelper defbefore)
+(defhelper defafter)
+(defhelper defaround)
+(defhelper defon-request)
+(defhelper defon-response)
+(defhelper defhandler)
+(defhelper defmiddleware)
