@@ -33,7 +33,6 @@
 
 (defn default-to [content-type]
   (fn [ctx]
-    (println "defaulting!")
     (assoc-in ctx [:request :accept] content-type)))
 
 (defn negotiate-response
