@@ -11,7 +11,7 @@
                    :dependencies [[potemkin "0.4.3"]
                                   [org.clojure/tools.namespace "0.2.10"]
                                   [io.pedestal/pedestal.jetty "0.5.1"]
-                                  [clj-http "2.0.1"]
+                                  [clj-http "3.4.1"]
 
                                   [ch.qos.logback/logback-classic "1.1.8"
                                    :exclusions [org.slf4j/slf4j-api]]
