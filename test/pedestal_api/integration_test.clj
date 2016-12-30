@@ -3,16 +3,12 @@
              [core :as api]
              [helpers :refer [defhandler]]
              [test-fixture :as tf]]
-            [io.pedestal.http :as bootstrap]
             [io.pedestal.interceptor :refer [interceptor]]
-            [io.pedestal.http.route :refer [url-for-routes]]
             [schema.core :as s]
             [clj-http.client :as http]
             [clojure.test :refer :all]
             [cheshire.core :as json]
-            [clojure.edn :as edn]
-            [cognitect.transit :as transit])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
+            [clojure.edn :as edn]))
 
 (s/defschema Pet
   {:name s/Str
