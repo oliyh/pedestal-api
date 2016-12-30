@@ -1,7 +1,8 @@
 (ns pedestal-api.integration-test
   (:require [pedestal-api
              [core :as api]
-             [helpers :refer [defhandler]]]
+             [helpers :refer [defhandler]]
+             [test-fixture :as tf]]
             [io.pedestal.http :as bootstrap]
             [io.pedestal.interceptor :refer [interceptor]]
             [io.pedestal.http.route :refer [url-for-routes]]
@@ -74,44 +75,9 @@
        ["/events/*topic" {:get events}]
        ["/swagger.json" {:get api/swagger-json}]]]]))
 
-(def service
-  {:env                      :dev
-   ::bootstrap/routes        #(deref #'routes)
-   ::bootstrap/router        :linear-search
-   ::bootstrap/resource-path "/public"
-   ::bootstrap/type          :jetty
-   ::bootstrap/join?         false})
+(use-fixtures :once (tf/with-server #(deref #'routes)))
 
-(def port 8082)
-
-(defn url-for [handler & args]
-  (apply (url-for-routes routes
-                         :absolute? true
-                         :request {:scheme "http"
-                                   :server-name "localhost"
-                                   :server-port port})
-         handler
-         args))
-
-(defn with-server [f]
-  (let [server (bootstrap/start (bootstrap/create-server
-                                 (-> service
-                                     (merge {::bootstrap/port port})
-                                     (bootstrap/default-interceptors))))]
-    (try
-      (f)
-      (finally (bootstrap/stop server)))))
-
-(defn transit-read-bytes [bytes type]
-  (transit/read (transit/reader (ByteArrayInputStream. bytes) type)))
-
-(defn transit-write-bytes [body type]
-  (let [out (ByteArrayOutputStream. 4096)
-        writer (transit/writer out type)]
-    (transit/write writer body)
-    (.toByteArray out)))
-
-(use-fixtures :once with-server)
+(def ^:private url-for (partial tf/url-for routes))
 
 (deftest can-get-content-test
 
@@ -140,7 +106,7 @@
     (is (= [{:name "Alfred"
              :type "dog"
              :age 6}]
-           (transit-read-bytes (.getBytes (:body response)) :json))))
+           (tf/transit-read-bytes (.getBytes (:body response)) :json))))
 
   (let [response (http/get (url-for ::get-all-pets) {:headers {"Accept" "application/transit+msgpack"}
                                                      :as :byte-array})]
@@ -149,7 +115,7 @@
     (is (= [{:name "Alfred"
              :type "dog"
              :age 6}]
-           (transit-read-bytes (:body response) :msgpack)))))
+           (tf/transit-read-bytes (:body response) :msgpack)))))
 
 (deftest can-submit-content-test
 
@@ -171,19 +137,19 @@
       (is (= {:pet pet} (edn/read-string (:body response)))))
 
     ;; transit+json
-    (let [response (http/post (url-for ::create-pet) {:body (transit-write-bytes pet :json)
+    (let [response (http/post (url-for ::create-pet) {:body (tf/transit-write-bytes pet :json)
                                                       :headers {"Content-Type" "application/transit+json"
                                                                 "Accept" "application/transit+json"}})]
       (is (= 201 (:status response)))
-      (is (= {:pet pet} (transit-read-bytes (.getBytes (:body response)) :json))))
+      (is (= {:pet pet} (tf/transit-read-bytes (.getBytes (:body response)) :json))))
 
     ;; transit+msgpack
-    (let [response (http/post (url-for ::create-pet) {:body (transit-write-bytes pet :msgpack)
+    (let [response (http/post (url-for ::create-pet) {:body (tf/transit-write-bytes pet :msgpack)
                                                       :headers {"Content-Type" "application/transit+msgpack"
                                                                 "Accept" "application/transit+msgpack"}
                                                       :as :byte-array})]
       (is (= 201 (:status response)))
-      (is (= {:pet pet} (transit-read-bytes (:body response) :msgpack))))))
+      (is (= {:pet pet} (tf/transit-read-bytes (:body response) :msgpack))))))
 
 (deftest helpers-test
   (let [response (http/get (url-for ::get-pet-by-name :path-params {:name "Keiran"}))]
