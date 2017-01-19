@@ -7,7 +7,7 @@
 
 ;; from https://gist.github.com/oliyh/2b9b9107e7e7e12d4a60e79a19d056ee
 
-(def event-terminator #"\r\n\r\n")
+(def event-mask (re-pattern (str "(?s).+?\r\n\r\n")))
 
 (defn- parse-event [raw-event]
   (->> (re-seq #"(.*): (.*)\n?" raw-event)
@@ -31,12 +31,11 @@
 
             (let [data (str data (slurp (io/input-stream byte-array)))]
 
-              (if (re-find event-terminator data)
-                (let [[event rest] (string/split data event-terminator)]
-                  (if (a/>!! events event)
-                    (recur rest)
-                    (do (println "Output stream closed, exiting read-loop")
-                        (.close event-stream))))
+              (if-let [es (not-empty (re-seq event-mask data))]
+                (if (every? true? (map #(a/>!! events %) es))
+                  (recur (string/replace data event-mask ""))
+                  (do (println "Output stream closed, exiting read-loop")
+                      (.close event-stream)))
 
                 (recur data)))))))
     events))
