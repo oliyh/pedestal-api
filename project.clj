@@ -6,12 +6,12 @@
   :dependencies [[frankiesardo/route-swagger "0.1.4"]]
   :repl-options {:init-ns user}
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0"]
-                                       [io.pedestal/pedestal.service "0.5.2"]]}
+                                       [io.pedestal/pedestal.service "0.5.3"]]}
              :dev {:source-paths ["dev" "example"]
                    :resources ["dev-resources"]
                    :dependencies [[potemkin "0.4.3"]
                                   [org.clojure/tools.namespace "0.2.10"]
-                                  [io.pedestal/pedestal.jetty "0.5.2"]
+                                  [io.pedestal/pedestal.jetty "0.5.3"]
                                   [clj-http "3.4.1"]
 
                                   [ch.qos.logback/logback-classic "1.1.8"

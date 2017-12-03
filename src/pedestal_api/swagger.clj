@@ -9,7 +9,17 @@
 
 (def swagger-json (i/interceptor (sw.int/swagger-json)))
 
-(def swagger-ui (i/interceptor (sw.int/swagger-ui)))
+(defn- realise-url-for [ctx]
+  (update-in ctx [:request :url-for] deref))
+
+(defn- delay-url-for [ctx]
+  (update-in ctx [:request :url-for] #(delay %)))
+
+(def swagger-ui
+  (i/interceptor
+   (-> (sw.int/swagger-ui)
+       (update :enter comp realise-url-for)
+       (update :leave comp delay-url-for))))
 
 (defn doc
   "Adds metatata m to a swagger route"
