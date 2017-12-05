@@ -95,6 +95,11 @@
                        {:status 200
                         :body (str "Deleted " (:name pet))})))})))
 
+(def no-csp
+  {:name ::no-csp
+   :leave (fn [ctx]
+            (assoc-in ctx [:response :headers "Content-Security-Policy"] ""))})
+
 (s/with-fn-validation
   (api/defroutes routes
     {:info {:title       "Swagger Sample App built using pedestal-api"
@@ -121,9 +126,7 @@
           :delete delete-pet}]]
 
        ["/swagger.json" {:get api/swagger-json}]
-       ["/*resource" {:get (assoc api/swagger-ui
-                                  :leave (fn [ctx]
-                                           (assoc-in ctx [:response :headers "Content-Security-Policy"] "")))}]]]]))
+       ["/*resource" ^:interceptors [no-csp] {:get api/swagger-ui}]]]]))
 
 (def service
   {:env                      :dev

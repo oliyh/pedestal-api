@@ -15,11 +15,14 @@
 (defn- delay-url-for [ctx]
   (update-in ctx [:request :url-for] #(delay %)))
 
+(defn- safe-comp [& fs]
+  (apply comp (remove nil? fs)))
+
 (def swagger-ui
   (i/interceptor
    (-> (sw.int/swagger-ui)
-       (update :enter comp realise-url-for)
-       (update :leave comp delay-url-for))))
+       (update :enter safe-comp realise-url-for)
+       (update :leave safe-comp delay-url-for))))
 
 (defn doc
   "Adds metatata m to a swagger route"
