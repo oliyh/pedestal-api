@@ -18,11 +18,13 @@
 (defn- safe-comp [& fs]
   (apply comp (remove nil? fs)))
 
-(def swagger-ui
+(defn make-swagger-ui [& opts]
   (i/interceptor
-   (-> (sw.int/swagger-ui)
+   (-> (apply sw.int/swagger-ui opts)
        (update :enter safe-comp realise-url-for)
        (update :leave safe-comp delay-url-for))))
+
+(def swagger-ui (make-swagger-ui))
 
 (defn doc
   "Adds metatata m to a swagger route"

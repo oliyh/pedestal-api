@@ -14,6 +14,7 @@
               validate-response
               swagger-json
               swagger-ui
+              make-swagger-ui
               doc]
 
              [pedestal-api.content-negotiation
