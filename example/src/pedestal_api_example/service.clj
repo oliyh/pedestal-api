@@ -129,12 +129,14 @@
        ["/*resource" ^:interceptors [no-csp] {:get api/swagger-ui}]]]]))
 
 (def service
-  {:env                      :dev
-   ::bootstrap/routes        #(deref #'routes)
+  {:env                        :dev
+   ::bootstrap/routes          #(deref #'routes)
    ;; linear-search, and declaring the swagger-ui handler last in the routes,
    ;; is important to avoid the splat param for the UI matching API routes
-   ::bootstrap/router        :linear-search
-   ::bootstrap/resource-path "/public"
-   ::bootstrap/type          :jetty
-   ::bootstrap/port          8080
-   ::bootstrap/join?         false})
+   ::bootstrap/router          :linear-search
+   ::bootstrap/resource-path   "/public"
+   ::bootstrap/type            :jetty
+   ::bootstrap/allowed-origins {:allowed-origins (constantly true)
+                                :creds true}
+   ::bootstrap/port            8080
+   ::bootstrap/join?           false})
