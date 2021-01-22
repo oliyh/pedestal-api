@@ -8,7 +8,8 @@
             [clj-http.client :as http]
             [clojure.test :refer :all]
             [cheshire.core :as json]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [route-swagger.doc :as doc]))
 
 (s/defschema Pet
   {:name s/Str
@@ -80,7 +81,7 @@
   ;;json
   (let [response (http/get (url-for ::get-all-pets))]
     (is (= 200 (:status response)))
-    (is (= "application/json;charset=UTF-8" (get-in response [:headers "Content-Type"])))
+    (is (= "application/json;charset=utf-8" (get-in response [:headers "Content-Type"])))
     (is (= [{:name "Alfred"
              :type "dog"
              :age 6}]
@@ -177,8 +178,9 @@
     (is (= "foo/bar" (:body response)))))
 
 (deftest swagger-schema-test
-  (let [response (http/get (url-for ::route-swagger.doc/swagger-json) {:as :json})]
+  (let [response (http/get (url-for ::doc/swagger-json) {})]
     (is (= 200 (:status response)))
     (is (:body response))
-    (is (get-in response [:body :paths (keyword "/events/{topic}")]))
-    (is (= "events" (get-in response [:body :paths (keyword "/events/{topic}") :get :operationId])))))
+    (let [body (json/parse-string (:body response) keyword)]
+      (is (get-in body [:paths (keyword "/events/{topic}")]))
+      (is (= "events" (get-in body [:paths (keyword "/events/{topic}") :get :operationId]))))))
