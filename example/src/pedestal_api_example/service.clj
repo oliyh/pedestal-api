@@ -139,4 +139,5 @@
    ::bootstrap/allowed-origins {:allowed-origins (constantly true)
                                 :creds true}
    ::bootstrap/port            8080
+   ::bootstrap/host            "0.0.0.0" ;; bind to all interfaces
    ::bootstrap/join?           false})

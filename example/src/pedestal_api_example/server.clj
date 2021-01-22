@@ -15,6 +15,7 @@
 (defn start []
   (when-not service-instance
     (create-server))
+  (println "Starting server on port" (::bootstrap/port service-instance))
   (bootstrap/start service-instance))
 
 (defn stop []
