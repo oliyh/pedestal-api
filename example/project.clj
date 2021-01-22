@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [pedestal-api "0.3.5-20210122.122134-3" :exclusions [prismatic/schema]]
+                 [pedestal-api "0.3.5-20210122.140842-4" :exclusions [prismatic/schema]]
                  [prismatic/schema "1.1.12"]
                  [io.pedestal/pedestal.service "0.5.8"]
                  [io.pedestal/pedestal.jetty "0.5.8"]

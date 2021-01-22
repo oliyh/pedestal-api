@@ -9,20 +9,9 @@
 
 (def swagger-json (i/interceptor (sw.int/swagger-json)))
 
-(defn- realise-url-for [ctx]
-  (update-in ctx [:request :url-for] deref))
-
-(defn- delay-url-for [ctx]
-  (update-in ctx [:request :url-for] #(delay %)))
-
-(defn- safe-comp [& fs]
-  (apply comp (remove nil? fs)))
-
 (defn make-swagger-ui [& opts]
   (i/interceptor
-   (-> (apply sw.int/swagger-ui opts)
-       (update :enter safe-comp realise-url-for)
-       (update :leave safe-comp delay-url-for))))
+   (apply sw.int/swagger-ui opts)))
 
 (def swagger-ui (make-swagger-ui))
 
