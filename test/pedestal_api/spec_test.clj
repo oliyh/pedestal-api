@@ -4,22 +4,27 @@
              [helpers :refer [defhandler]]
              [test-fixture :as tf]]
             [io.pedestal.interceptor :refer [interceptor]]
-            [schema.core :as s]
             [clj-http.client :as http]
             [clojure.test :refer [deftest is use-fixtures]]
             [cheshire.core :as json]
             [clojure.edn :as edn]
-            [route-swagger.doc :as doc]))
+            [route-swagger.doc :as doc]
+            [clojure.spec.alpha :as s]))
 
-(s/defschema Pet
-  {:name s/Str
-   :type s/Str
-   :age s/Int})
+(s/def ::name string?)
+(s/def ::type string?)
+(s/def ::age integer?)
+
+(s/def ::pet (s/keys :req-un [::name ::type ::age]))
+(s/def ::pets (s/coll-of ::pet))
+
+(s/def ::sort #{:asc :desc})
+(s/def ::sort-params (s/keys :req-un [::sort]))
 
 (def create-pet
   (api/annotate
-   {:parameters {:body-params Pet}
-    :responses {201 {:body {:pet Pet}}}}
+   {:parameters {:body-params ::pet}
+    :responses {201 {:body {:pet ::pet}}}}
    (interceptor
     {:name  ::create-pet
      :enter (fn [ctx]
@@ -29,8 +34,8 @@
 
 (def get-all-pets
   (api/annotate
-   {:parameters {:query-params {(s/optional-key :sort) (s/enum :asc :desc)}}
-    :responses {200 {:body [Pet]}}}
+   {:parameters {:query-params ::sort-params}
+    :responses {200 {:body ::pets}}}
    (interceptor
     {:name  ::get-all-pets
      :enter (fn [ctx]
@@ -41,36 +46,27 @@
                               :age 6}]}))})))
 
 (defhandler get-pet-by-name
-  {:parameters {:path-params {:name s/Str}}
-   :responses {200 {:body Pet}}}
+  {:parameters {:path-params {:name ::name}}
+   :responses {200 {:body ::pet}}}
   [{:keys [path-params]}]
   {:status 200
    :body {:name (:name path-params)
           :type "dog"
           :age 6}})
 
-(defhandler events
-  {:parameters {:path-params {:topic (s/constrained s/Str #(re-find #"/" %))}}
-   :responses {200 {:body s/Str}}}
-  [{:keys [path-params]}]
-  {:status 200
-   :body (:topic path-params)})
-
-(s/with-fn-validation
-  (api/defroutes routes
-    {}
-    [[["/" ^:interceptors [api/error-responses
-                           (api/negotiate-response)
-                           (api/body-params)
-                           api/common-body
-                           (api/coerce-request)
-                           (api/validate-response)]
-       ["/pets"
-        {:get get-all-pets
-         :post create-pet}
-        ["/:name" {:get get-pet-by-name}]]
-       ["/events/*topic" {:get events}]
-       ["/swagger.json" {:get api/swagger-json}]]]]))
+(api/defroutes routes
+  {:spec? true}
+  [[["/" ^:interceptors [api/error-responses
+                         (api/negotiate-response)
+                         (api/body-params)
+                         api/common-body
+                         (api/coerce-request)
+                         (api/validate-response)]
+     ["/pets"
+      {:get get-all-pets
+       :post create-pet}
+      ["/:name" {:get get-pet-by-name}]]
+     ["/swagger.json" {:get api/swagger-json}]]]])
 
 (use-fixtures :once (tf/with-server #(deref #'routes)))
 
@@ -182,5 +178,6 @@
     (is (= 200 (:status response)))
     (is (:body response))
     (let [body (json/parse-string (:body response) keyword)]
+      (is (= {} body))
       (is (get-in body [:paths (keyword "/events/{topic}")]))
       (is (= "events" (get-in body [:paths (keyword "/events/{topic}") :get :operationId]))))))
