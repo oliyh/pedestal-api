@@ -2,13 +2,16 @@
   (:require [io.pedestal.http.body-params :as pedestal]
             [io.pedestal.interceptor :as i]
             [route-swagger.doc :as sw.doc]
-            [ring.middleware.multipart-params :as multipart-params]
             [clojure.walk :as walk]
-            [clojure.set :as set]
-            [linked.core :as linked]))
+            [clojure.set :as set]))
+
+(defn- safe-merge [a b]
+  (if (every? map? [a b])
+    (merge a b)
+    a))
 
 (defn- merge-empty-params [request]
-  (merge-with merge
+  (merge-with safe-merge
               request
               {:body-params {}
                :form-params {}

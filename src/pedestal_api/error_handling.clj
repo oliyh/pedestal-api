@@ -3,16 +3,19 @@
             [route-swagger.doc :as sw.doc]
             [ring.swagger.middleware :refer [stringify-error]]
             [io.pedestal.interceptor.error :as error]
-            [ring.util.http-status :as status] ;; todo use these?
-            ))
+            [ring.util.http-status :as status]
+            [io.pedestal.http.body-params :as body-params]))
 
 (def error-responses
   (sw.doc/annotate
-    {:responses {400 {}
-                 500 {}}}
+    {:responses {status/bad-request {}
+                 status/internal-server-error {}}}
     (error/error-dispatch [ctx ex]
+      [{:interceptor ::body-params/body-params}]
+      (assoc ctx :response {:status status/bad-request :body "Cannot deserialise body"})
+
       [{:interceptor ::sw.int/coerce-request}]
-      (assoc ctx :response {:status 400 :body (stringify-error (:error (ex-data ex)))})
+      (assoc ctx :response {:status status/bad-request :body (stringify-error (:error (ex-data ex)))})
 
       [{:interceptor ::sw.int/validate-response}]
-      (assoc ctx :response {:status 500 :body (stringify-error (:error (ex-data ex)))}))))
+      (assoc ctx :response {:status status/internal-server-error :body (stringify-error (:error (ex-data ex)))}))))
