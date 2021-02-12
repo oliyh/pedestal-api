@@ -12,10 +12,10 @@
                  status/internal-server-error {}}}
     (error/error-dispatch [ctx ex]
       [{:interceptor ::body-params/body-params}]
-      (assoc ctx :response {:status status/bad-request :body "Cannot deserialise body"})
+      (assoc ctx :response {:status status/bad-request :body "Cannot deserialise body" :headers {"Content-Type" "text/plain"}})
 
       [{:interceptor ::sw.int/coerce-request}]
-      (assoc ctx :response {:status status/bad-request :body (stringify-error (:error (ex-data ex)))})
+      (assoc ctx :response {:status status/bad-request :body (stringify-error (:error (ex-data ex))) :headers {"Content-Type" "text/plain"}})
 
       [{:interceptor ::sw.int/validate-response}]
-      (assoc ctx :response {:status status/internal-server-error :body (stringify-error (:error (ex-data ex)))}))))
+      (assoc ctx :response {:status status/internal-server-error :body (stringify-error (:error (ex-data ex))) :headers {"Content-Type" "text/plain"}}))))

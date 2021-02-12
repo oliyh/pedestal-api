@@ -172,6 +172,14 @@
     (is (= "{:error {:body-params {:age \"(not (integer? abc))\"}}}"
            (:body response)))))
 
+(deftest bad-request-test
+  (let [response (http/post (url-for ::create-pet) {:body "{\""
+                                                    :headers {"Content-Type" "application/json"}
+                                                    :throw-exceptions false})]
+    (is (= 400 (:status response)))
+    (is (= "Cannot deserialise body"
+           (:body response)))))
+
 (deftest splat-params-test
   (let [response (http/get (url-for ::events :path-params {:topic "foo/bar"}))]
     (is (= 200 (:status response)))

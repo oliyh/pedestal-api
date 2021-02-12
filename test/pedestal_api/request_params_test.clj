@@ -18,6 +18,7 @@
 
 (def bad-request-response
   {:status 400
+   :headers {"Content-Type" "text/plain"}
    :body "Cannot deserialise body"})
 
 (deftest body-parsing-test
