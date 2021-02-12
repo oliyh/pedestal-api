@@ -5,11 +5,9 @@ A batteries-included API for Pedestal using Swagger.
 It implements the parts of HTTP that are useful for APIs and allows you to document your handlers and middleware
 using idiomatic Clojure and generate a compliant Swagger specification.
 
-## Download
 [![Clojars Project](https://img.shields.io/clojars/v/pedestal-api.svg)](https://clojars.org/pedestal-api)
 
-Note that you must provide pedestal within your own project's dependencies, and that due to
-[breaking changes](https://github.com/pedestal/pedestal/releases/tag/0.5.0) it must be `pedestal 0.5.0` or higher.
+The [example code](https://github.com/oliyh/pedestal-api/tree/master/example) can be seen running on Heroku at https://pedestal-api.herokuapp.com
 
 ## Features
 
