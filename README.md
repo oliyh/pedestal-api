@@ -7,7 +7,7 @@ using idiomatic Clojure and generate a compliant Swagger specification.
 
 [![Clojars Project](https://img.shields.io/clojars/v/pedestal-api.svg)](https://clojars.org/pedestal-api)
 
-The [example code](https://github.com/oliyh/pedestal-api/tree/master/example) can be seen running on Heroku at https://pedestal-api.herokuapp.com
+The [example code](https://github.com/oliyh/pedestal-api/tree/master/example) can be seen at https://pedestal-api.oliy.co.uk
 
 ## Features
 
