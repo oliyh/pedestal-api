@@ -36,7 +36,7 @@ those which suit you best.
 ## Example
 
 The [example code](https://github.com/oliyh/pedestal-api/tree/master/example) (reproduced below)
-can be seen running on Heroku at https://pedestal-api.herokuapp.com
+can be seen running on Heroku at https://pedestal-api.oliy.co.uk
 
 ```clojure
 (ns pedestal-api-example.service
